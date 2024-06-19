@@ -1,10 +1,9 @@
 interface NewGameReportRequest {
-    players: PlayerReportInfo[]
+    players: PlayerGameReportInfo[]
 }
 
-interface PlayerReportInfo {
-    playerId: string,
-    playerRank: number,
+interface PlayerGameReportInfo {
+    player: string,
     playerScore: number,
     playerLeader: string,
     winCondition: string,

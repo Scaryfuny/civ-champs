@@ -1,30 +1,22 @@
 import {InvocationContext} from "@azure/functions";
-import {Db, MongoClient} from 'mongodb';
+import {Db} from 'mongodb';
+import {DatabaseConnection} from "./database/database-connection";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class UserService {
 
-    private client: MongoClient;
-    private db: Db;
-
-    constructor() {
-        this.client = new MongoClient(process.env.COSMOS_DB_CONNECTION_STRING);
-    }
-
-    private async connect() {
-        await this.client.connect();
-        this.db = this.client.db('game-db-dev');
+    constructor(@inject(DatabaseConnection) private databaseConnection: DatabaseConnection) {
     }
 
     async createUser(user: NewUserRequest, context: InvocationContext): Promise<UserModel> {
-        if (!this.db) {
-            await this.connect();
-        }
+        const db: Db = await this.databaseConnection.getDB();
 
         if (!user.accountName) {
             throw new Error("Field 'accountName' is required.");
         }
 
-        const existingUser = await this.db.collection('users').findOne({accountName: user.accountName});
+        const existingUser = await db.collection('users').findOne({accountName: user.accountName});
         if (existingUser) {
             throw new Error(`User with account name '${user.accountName}' already exists.`);
         }
@@ -41,7 +33,7 @@ export class UserService {
         };
 
         try {
-            await this.db.collection('users').insertOne(userModel);
+            await db.collection('users').insertOne(userModel);
         } catch (e) {
             context.error(`Error creating user with account name '${user.accountName}'`);
             throw new Error(`Error creating user: ${e.message}`);
@@ -50,14 +42,15 @@ export class UserService {
         return userModel;
     }
 
-    async getAllUsers(context: InvocationContext): Promise<UserModel[]> {
-        if (!this.db) {
-            await this.connect();
-        }
+    async getAllUsers(): Promise<UserModel[]> {
+        const db: Db = await this.databaseConnection.getDB();
 
         // Get all users and sort them by rankingScore
-        const users = await this.db.collection('users').find().sort({rankingScore: -1}).toArray();
+        const users = await db.collection('users').find().sort({rankingScore: -1}).toArray();
+        return this.convertToUserModel(users);
+    }
 
+    private convertToUserModel(users: any[]) {
         // Map the returned documents to UserModel objects
         return users.map(user => ({
             accountName: user.accountName,
@@ -69,5 +62,38 @@ export class UserService {
                 firstHalfResultCount: user.statistics.firstHalfResultCount
             }
         }));
+    }
+
+    async isUserExists(player: string): Promise<boolean> {
+        const db: Db = await this.databaseConnection.getDB();
+        const existingUser = await db.collection('users').findOne({accountName: player});
+        return !!existingUser;
+
+    }
+
+    async findUsersByIds(players: string[]): Promise<UserModel[]> {
+        const db: Db = await this.databaseConnection.getDB();
+        const users = await db.collection('users').find({accountName: {$in: players}}).toArray();
+
+        return this.convertToUserModel(users);
+    }
+
+    async updateUser(thisPlayerModel: UserModel, context: InvocationContext) {
+        const db: Db = await this.databaseConnection.getDB();
+        db.collection('users').updateOne({accountName: thisPlayerModel.accountName}, {
+            $set: {
+                rankingScore: thisPlayerModel.rankingScore,
+                statistics: {
+                    totalGamesCount: thisPlayerModel.statistics.totalGamesCount,
+                    totalWinsCount: thisPlayerModel.statistics.totalWinsCount,
+                    winRate: thisPlayerModel.statistics.winRate,
+                    firstHalfResultCount: thisPlayerModel.statistics.firstHalfResultCount
+                }
+            }
+        }).then(() => {
+        }).catch((e) => {
+            context.error(`Error updating user ${thisPlayerModel.accountName}`);
+            throw new Error(`Error updating user: ${e.message}`);
+        });
     }
 }

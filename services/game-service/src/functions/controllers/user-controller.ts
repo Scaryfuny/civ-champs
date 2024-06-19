@@ -1,12 +1,15 @@
 import {HttpRequest, HttpResponseInit, InvocationContext} from "@azure/functions";
 import {UserService} from "../services/user-service";
+import {container} from "../inversify.config";
+
 
 export async function getAllUsers(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Get all users requested..."`);
 
-    const userService = new UserService();
+    const userService = container.get<UserService>(UserService);
+
     try {
-        const users = await userService.getAllUsers(context);
+        const users = await userService.getAllUsers();
         context.log(`${users.length} users found.`);
         return {body: JSON.stringify(users), headers: {'Content-Type': 'text/json'}};
     } catch (e) {
@@ -22,7 +25,7 @@ export async function createUser(request: HttpRequest, context: InvocationContex
 
         context.log(`Request body: ${JSON.stringify(newUser)}`);
 
-        const userService = new UserService();
+        const userService = container.get<UserService>(UserService);
 
         await userService.createUser(newUser, context);
 
