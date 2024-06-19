@@ -1,0 +1,3 @@
+interface NewUserRequest {
+    accountName: string
+}

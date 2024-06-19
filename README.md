@@ -17,21 +17,6 @@ Project structure
   - /db (Cosmos DB setup and scripts)
   - /infra (Terraform scripts)
 
-
-Commands:
-
-Infrastructure:
-- `terraform init` - initialize Terraform
-- `terraform plan` - show the plan of changes
-- `terraform apply` - apply the changes
-
-Local development:
-
-Deploy:
-- Deploy Services:
-  - `cd services/game-service-apis`
-  - `func azure functionapp publish func-game-service-apis-dev` - deploy Azure Functions to Azure
-
 Local env set up
 - Install Node.js https://nodejs.org/en/download
   - for macOS: `brew install node`
@@ -42,3 +27,21 @@ Local env set up
   - for macOS: `brew tap azure/functions && brew install azure-functions-core-tools@4`
 - Install Terraform https://developer.hashicorp.com/terraform/install
   - for macOS: `brew tap hashicorp/tap && brew install hashicorp/tap/terraform`
+
+Commands:
+
+Infrastructure:
+- `terraform init` - initialize Terraform
+- `terraform plan` - show the plan of changes
+- `terraform apply` - apply the changes
+
+Local development:
+Run:
+- Run Services:
+  - `cd services/game-service-apis`
+  - `func start` - run Azure Functions locally
+
+Deploy:
+- Deploy Services:
+  - `cd services/game-service-apis`
+  - `func azure functionapp publish func-game-service-apis-dev` - deploy Azure Functions to Azure
