@@ -1,0 +1,6 @@
+curl -X POST -d '{"accountName" : "Ingvar"}' -sl 'http://localhost:7071/api/users'
+curl -X POST -d '{"accountName" : "untdofman"}' -sl 'http://localhost:7071/api/users'
+curl -X POST -d '{"accountName" : "DeadVoodoo"}' -sl 'http://localhost:7071/api/users'
+curl -X POST -d '{"accountName" : "Baurman"}' -sl 'http://localhost:7071/api/users'
+curl -X POST -d '{"accountName" : "Ayzrian"}' -sl 'http://localhost:7071/api/users'
+curl -X POST -d '{"accountName" : "Shakespeare"}' -sl 'http://localhost:7071/api/users'
