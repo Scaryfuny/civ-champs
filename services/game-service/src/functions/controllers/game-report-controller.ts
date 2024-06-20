@@ -14,7 +14,7 @@ export async function getGameReports(request: HttpRequest, context: InvocationCo
 export async function createGameReport(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log("Create game report requested...");
     try {
-        const newReportRequest: NewGameReportRequest = JSON.parse(await request.text());
+        const newReportRequest: GameReportRequest = JSON.parse(await request.text());
         // context.log("New game report: " + JSON.stringify(newReportRequest));
 
         const gameReportService = container.get<GameReportService>(GameReportService);

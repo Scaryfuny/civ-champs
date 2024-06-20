@@ -19,6 +19,7 @@
     "rimraf": "^5.0.7"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "azure-functions-core-tools": "^4.x",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.5",

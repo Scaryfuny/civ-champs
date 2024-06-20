@@ -8,9 +8,9 @@ export class NewGameReportRequestValidator {
     constructor(@inject(UserService) private userService: UserService) {
     }
 
-    async validate(gameReport: NewGameReportRequest): Promise<boolean> {
+    async validate(gameReport: GameReportRequest): Promise<boolean> {
         //check that report contains at least 2 players
-        if (gameReport.players == null || gameReport.players.length < 2) {
+        if (gameReport.playersResults == null || gameReport.playersResults.length < 2) {
             throw new Error('Report should contain least of 2 players');
         }
 
@@ -19,10 +19,10 @@ export class NewGameReportRequestValidator {
         const validWinConditions = ["Science", "Culture", "Domination", "Religion", "Diplomacy", "Territory", "Score"];
 
         // find max player score
-        let maxPlayerScore = gameReport.players.reduce((acc, player) => Math.max(acc, player.playerScore), Number.MIN_SAFE_INTEGER);
+        let maxPlayerScore = gameReport.playersResults.reduce((acc, player) => Math.max(acc, player.playerScore), Number.MIN_SAFE_INTEGER);
 
         //check that all players exist and leaders exist
-        for (let player of gameReport.players) {
+        for (let player of gameReport.playersResults) {
             if (!leaders.find(leader => leader.name === player.playerLeader)) {
                 throw new Error(`Leader '${player.playerLeader}' does not exist`);
             }
@@ -49,10 +49,5 @@ export class NewGameReportRequestValidator {
         }
 
         return true;
-    }
-
-    validWinCondition(winCondition: string) {
-        const validWinConditions = ["Science", "Culture", "Domination", "Religion", "Diplomacy", "Territory", "Score"];
-        return validWinConditions.includes(winCondition);
     }
 }

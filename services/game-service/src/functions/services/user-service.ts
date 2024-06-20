@@ -28,7 +28,8 @@ export class UserService {
                 totalGamesCount: 0,
                 totalWinsCount: 0,
                 winRate: 0,
-                firstHalfResultCount: 0
+                positiveResultCount: 0,
+                positiveResultRate: 0
             }
         };
 
@@ -47,21 +48,7 @@ export class UserService {
 
         // Get all users and sort them by rankingScore
         const users = await db.collection('users').find().sort({rankingScore: -1}).toArray();
-        return this.convertToUserModel(users);
-    }
-
-    private convertToUserModel(users: any[]) {
-        // Map the returned documents to UserModel objects
-        return users.map(user => ({
-            accountName: user.accountName,
-            rankingScore: user.rankingScore,
-            statistics: {
-                totalGamesCount: user.statistics.totalGamesCount,
-                totalWinsCount: user.statistics.totalWinsCount,
-                winRate: user.statistics.winRate,
-                firstHalfResultCount: user.statistics.firstHalfResultCount
-            }
-        }));
+        return users as any;
     }
 
     async isUserExists(player: string): Promise<boolean> {
@@ -75,25 +62,28 @@ export class UserService {
         const db: Db = await this.databaseConnection.getDB();
         const users = await db.collection('users').find({accountName: {$in: players}}).toArray();
 
-        return this.convertToUserModel(users);
+        return users as any;
     }
 
-    async updateUser(thisPlayerModel: UserModel, context: InvocationContext) {
+    async updateUsers(users: UserModel[], context: InvocationContext) {
         const db: Db = await this.databaseConnection.getDB();
-        db.collection('users').updateOne({accountName: thisPlayerModel.accountName}, {
-            $set: {
-                rankingScore: thisPlayerModel.rankingScore,
-                statistics: {
-                    totalGamesCount: thisPlayerModel.statistics.totalGamesCount,
-                    totalWinsCount: thisPlayerModel.statistics.totalWinsCount,
-                    winRate: thisPlayerModel.statistics.winRate,
-                    firstHalfResultCount: thisPlayerModel.statistics.firstHalfResultCount
+        for (let player of users) {
+            await db.collection('users').updateOne({accountName: player.accountName}, {
+                $set: {
+                    rankingScore: player.rankingScore,
+                    statistics: {
+                        totalGamesCount: player.statistics.totalGamesCount,
+                        totalWinsCount: player.statistics.totalWinsCount,
+                        winRate: player.statistics.winRate,
+                        positiveResultCount: player.statistics.positiveResultCount,
+                        positiveResultRate: player.statistics.positiveResultRate
+                    }
                 }
-            }
-        }).then(() => {
-        }).catch((e) => {
-            context.error(`Error updating user ${thisPlayerModel.accountName}`);
-            throw new Error(`Error updating user: ${e.message}`);
-        });
+            }).then(() => {
+            }).catch((e) => {
+                context.error(`Error updating user ${player.accountName}`);
+                throw new Error(`Error updating user: ${e.message}`);
+            });
+        }
     }
 }

@@ -5,6 +5,7 @@ interface UserModel {
         totalGamesCount: number,
         totalWinsCount: number,
         winRate: number,
-        firstHalfResultCount: number,
+        positiveResultCount: number,
+        positiveResultRate: number
     }
 }
